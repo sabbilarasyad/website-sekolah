@@ -35,3 +35,4 @@ Route::middleware('auth')->group(function () {
     //     Route::get('/guru', [GuruController::class, 'index'])->name('admin.guru.index');
     // });
 });
+require __DIR__.'/academic.php';
