@@ -2,17 +2,15 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Services\CanteenController;
+use App\Http\Controllers\Services\QAController;
+use App\Http\Controllers\Services\ReviewController;
 use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
 | Domain A - Foundation & Authentication
 |--------------------------------------------------------------------------
-| Routes ini adalah fondasi untuk seluruh domain lain. Domain B/C/D/E
-| menambahkan route mereka sendiri di file terpisah (mis. routes/guru.php,
-| routes/siswa.php, dst.) dan meng-include-nya di sini, ATAU mendaftarkan
-| route group baru dengan middleware ['auth', 'role:...'] yang sudah
-| disediakan oleh domain ini. Jangan mengubah route auth/dashboard di bawah.
 */
 
 Route::get('/', function () {
@@ -25,14 +23,36 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [LoginController::class, 'login'])->name('login.attempt');
 });
 
-// Authenticated routes
+/*
+|--------------------------------------------------------------------------
+| Domain E - Interactive Services (Public Routes)
+|--------------------------------------------------------------------------
+*/
+Route::get('/canteen', [CanteenController::class, 'index'])->name('canteen.index');
+Route::get('/qa', [QAController::class, 'index'])->name('qa.index');
+Route::get('/qa/{question}', [QAController::class, 'show'])->name('qa.show');
+Route::get('/reviews', [ReviewController::class, 'index'])->name('reviews.index');
+
+/*
+|--------------------------------------------------------------------------
+| Authenticated Routes (Domain A & Domain E Protected)
+|--------------------------------------------------------------------------
+*/
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Contoh pola untuk domain lain menambahkan route ter-scope per role:
-    // Route::middleware('role:admin')->prefix('admin')->group(function () {
-    //     Route::get('/guru', [GuruController::class, 'index'])->name('admin.guru.index');
-    // });
+    // Kantin
+    Route::post('/canteen/checkout', [CanteenController::class, 'checkout'])->name('canteen.checkout');
+    Route::get('/canteen/my-orders', [CanteenController::class, 'userOrders'])->name('canteen.orders');
+    Route::patch('/canteen/orders/{order}/status', [CanteenController::class, 'updateStatus'])->name('canteen.orders.update-status');
+
+    // Q&A
+    Route::post('/qa/questions', [QAController::class, 'storeQuestion'])->name('qa.questions.store');
+    Route::post('/qa/questions/{question}/answers', [QAController::class, 'storeAnswer'])->name('qa.answers.store');
+
+    // Review
+    Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store');
 });
+
 require __DIR__.'/academic.php';
