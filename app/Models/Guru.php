@@ -26,4 +26,13 @@ class Guru extends Model
     {
         return $this->hasOne(User::class, 'nip', 'nip');
     }
+    /**
+     * Mata pelajaran yang diampu guru ini.
+     * Ditambahkan oleh Domain B (Academic) — additive, tidak mengubah
+     * apa pun yang sudah ada di model ini.
+     */
+    public function mapel()
+    {
+        return $this->hasMany(Mapel::class, 'nip', 'nip');
+    }
 }

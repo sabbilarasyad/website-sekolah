@@ -5,16 +5,37 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Model baca-saja untuk tabel mapel (hanya untuk verifikasi koneksi database).
- * Tidak ada FK langsung dari users ke mapel, sehingga primary key & kolom
- * di sini TIDAK diasumsikan.
+ * Model tabel mapel — dilengkapi oleh Domain B (Academic/Guru) sesuai
+ * struktur database sebenarnya (lihat schema sekolah.sql):
  *
- * NEEDS DECISION: struktur kolom tabel "mapel" tidak dijabarkan di task ini.
- * Domain pemilik data mapel silakan melengkapi $fillable / kolom sesuai kebutuhan.
+ *   kode_mapel (PK, varchar), nama_mapel, kkm (int, default 75),
+ *   nip (FK -> guru.nip, ON DELETE SET NULL)
+ *
+ * Bersifat read-only untuk kebutuhan Domain B (tidak ada requirement CRUD
+ * mapel di Domain B) — tetap $guarded = ['*'] agar tidak bisa mass-assign.
  */
 class Mapel extends Model
 {
     protected $table = 'mapel';
+    protected $primaryKey = 'kode_mapel';
+    public $incrementing = false;
+    protected $keyType = 'string';
     public $timestamps = false;
     protected $guarded = ['*'];
+
+    /**
+     * Guru pengampu mata pelajaran ini.
+     */
+    public function guru()
+    {
+        return $this->belongsTo(Guru::class, 'nip', 'nip');
+    }
+
+    /**
+     * Nilai-nilai yang tercatat untuk mapel ini.
+     */
+    public function nilai()
+    {
+        return $this->hasMany(Nilai::class, 'kode_mapel', 'kode_mapel');
+    }
 }
